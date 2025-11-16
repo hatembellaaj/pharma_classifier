@@ -1,16 +1,16 @@
-"""Handles exporting latest pipeline outputs."""
+"""CSV export helpers."""
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pandas as pd
 
 
-class Exporter:
-    def __init__(self, history_path: str) -> None:
-        self.history_path = Path(history_path)
-        self.history_path.parent.mkdir(parents=True, exist_ok=True)
-
-    def save_latest(self, df: pd.DataFrame) -> None:
-        output_path = self.history_path.with_suffix(".latest.csv")
-        df.to_csv(output_path, index=False)
+def export_results(df: pd.DataFrame, path: str | os.PathLike[str]) -> str:
+    """Persist the classified dataframe to the requested path."""
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(output_path, index=False)
+    print(f"📦 Fichier exporté : {output_path}")
+    return str(output_path)

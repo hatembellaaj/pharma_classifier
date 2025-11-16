@@ -1,14 +1,38 @@
-"""Post-processing utilities for classifier outputs."""
+"""Helpers to apply deterministic categories to dataframe rows."""
 from __future__ import annotations
 
-from .ai_classifier import ClassificationResult
+import json
+from typing import Any
+
+import pandas as pd
+
+from config.constants import FORCED_MEDICINE_CATEGORIES
 
 
-class CategoryAssigner:
-    def __init__(self, *, default_category: str) -> None:
-        self.default_category = default_category
+def force_medicine_categories(row: pd.Series) -> pd.Series:
+    new_row = row.copy()
+    for column, value in FORCED_MEDICINE_CATEGORIES.items():
+        new_row[column] = value
+    new_row["Classification_source"] = "MEDICAMENT"
+    return new_row
 
-    def assign(self, result: ClassificationResult | None) -> str:
-        if result is None:
-            return self.default_category
-        return result.label or self.default_category
+
+def _parse_ai_payload(payload: Any) -> dict[str, Any]:
+    if isinstance(payload, dict):
+        return payload
+    if isinstance(payload, str):
+        try:
+            return json.loads(payload)
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
+def apply_ai_classification(row: pd.Series, payload: Any) -> pd.Series:
+    data = _parse_ai_payload(payload)
+    new_row = row.copy()
+    for field in ["Marque", "Univers", "Famille", "Tablette", "Tablette_consolidee"]:
+        if field in data and data[field]:
+            new_row[field] = data[field]
+    new_row["Classification_source"] = "IA"
+    return new_row

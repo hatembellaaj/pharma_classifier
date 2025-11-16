@@ -1,23 +1,23 @@
-"""Utilities for loading CSV inputs into pandas dataframes."""
+"""CSV loading utilities."""
 from __future__ import annotations
 
+import os
 from pathlib import Path
-from typing import Iterable
 
 import pandas as pd
 
 
-class CSVLoader:
-    """Loads CSV files with consistent options."""
-
-    def __init__(self, *, encoding: str = "utf-8", sep: str = ";") -> None:
-        self.encoding = encoding
-        self.sep = sep
-
-    def load(self, path: str | Path) -> pd.DataFrame:
-        df = pd.read_csv(path, encoding=self.encoding, sep=self.sep)
-        df.columns = [col.strip().lower() for col in df.columns]
-        return df
-
-    def load_many(self, paths: Iterable[str | Path]) -> list[pd.DataFrame]:
-        return [self.load(path) for path in paths]
+def load_inputs(path: str | os.PathLike[str]) -> list[pd.DataFrame]:
+    """Load every CSV file in *path* and return a list of DataFrames."""
+    folder = Path(path)
+    folder.mkdir(parents=True, exist_ok=True)
+    files = sorted(f for f in folder.iterdir() if f.suffix.lower() == ".csv")
+    if not files:
+        print(f"⚠️ Aucun fichier CSV trouvé dans {folder}")
+        return []
+    datasets: list[pd.DataFrame] = []
+    for file in files:
+        print(f"📄 Chargement : {file}")
+        df = pd.read_csv(file, dtype=str).fillna("")
+        datasets.append(df)
+    return datasets

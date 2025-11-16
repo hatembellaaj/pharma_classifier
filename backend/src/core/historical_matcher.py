@@ -1,29 +1,25 @@
-"""Fuzzy matching against historical classification records."""
+"""Fuzzy matching helpers against the historique CSV."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+import pandas as pd
 
-from ..utils import fuzzy
-
-
-@dataclass
-class MatchResult:
-    label: str
-    score: float
+from config import constants
+from utils import fuzzy
 
 
-class HistoricalMatcher:
-    def __init__(self, history_index: dict[str, str] | None = None) -> None:
-        self.history_index = history_index or {}
-
-    def match(self, text: str) -> MatchResult | None:
-        if not self.history_index:
-            return None
-        best_label, best_score = None, 0.0
-        for candidate, label in self.history_index.items():
-            score = fuzzy.similarity(text, candidate)
-            if score > best_score:
-                best_label, best_score = label, score
-        if best_label is None:
-            return None
-        return MatchResult(label=best_label, score=best_score)
+def match_in_history(label: str, historique: pd.DataFrame) -> pd.Series | None:
+    if historique is None or historique.empty:
+        return None
+    best_idx = None
+    best_score = 0
+    for idx, row in historique.iterrows():
+        candidate = row.get("Libelle", "")
+        score = fuzzy.fuzzy_score(label, candidate)
+        if score > best_score:
+            best_idx = idx
+            best_score = score
+    if best_idx is None:
+        return None
+    if best_score < constants.HISTORY_MATCH_THRESHOLD * 100:
+        return None
+    return historique.loc[best_idx]

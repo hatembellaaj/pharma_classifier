@@ -1,21 +1,25 @@
-"""Placeholder AI classifier abstraction."""
+"""OpenAI-powered classifier helper."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+import openai
+
+from config.prompts import PROMPT_CLASSIFICATION
+from config.settings import OPENAI_API_KEY
+
+if OPENAI_API_KEY:
+    openai.api_key = OPENAI_API_KEY
 
 
-@dataclass
-class ClassificationResult:
-    label: str
-    confidence: float
-
-
-class AIClassifier:
-    def __init__(self, *, model_path: str) -> None:
-        self.model_path = model_path
-
-    def predict(self, text: str) -> ClassificationResult:
-        # Placeholder rule to keep the example self-contained
-        score = min(len(text) / 100, 1.0)
-        label = "pharma" if score > 0.5 else "autre"
-        return ClassificationResult(label=label, confidence=score)
+def classify_with_ai(label: str) -> str:
+    if not OPENAI_API_KEY:
+        raise RuntimeError("OPENAI_API_KEY est requis pour la classification IA")
+    messages = [
+        {"role": "system", "content": PROMPT_CLASSIFICATION},
+        {"role": "user", "content": f"Libellé : {label}"},
+    ]
+    try:
+        response = openai.chat.completions.create(model="gpt-4o-mini", messages=messages)
+        return response.choices[0].message["content"]
+    except AttributeError:
+        response = openai.ChatCompletion.create(model="gpt-4o-mini", messages=messages)
+        return response.choices[0].message["content"]

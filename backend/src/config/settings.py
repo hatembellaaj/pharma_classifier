@@ -4,9 +4,16 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 
-load_dotenv()
+# Try loading from the current working directory first (e.g., when the app is started
+# from the repo root), then fall back to searching relative to this file so deployments
+# running from a different workdir still locate the shared .env.
+env_path = find_dotenv(usecwd=True)
+if not env_path:
+    env_path = find_dotenv()
+
+load_dotenv(env_path, override=False)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 API_MEDICAMENTS_BASE = os.getenv(

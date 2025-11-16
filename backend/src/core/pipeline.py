@@ -12,6 +12,7 @@ from core.historical_matcher import match_in_history
 from core.medicine_detector import is_medicine_by_label
 from config import settings
 from utils.progress_log import ProgressLog
+from utils.history import normalize_history_dataframe
 
 
 def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None) -> pd.DataFrame:
@@ -25,6 +26,7 @@ def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None
     emit("\n🚀 Lancement du pipeline...")
     try:
         historique = pd.read_csv(settings.HISTORY_PATH, dtype=str).fillna("")
+        historique = normalize_history_dataframe(historique)
     except FileNotFoundError:
         emit(
             "ℹ️ Aucun fichier d'historique trouvé à "

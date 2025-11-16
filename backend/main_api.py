@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from io import BytesIO
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +21,7 @@ from core.pipeline import run_pipeline  # noqa: E402
 from export.exporter import export_results  # noqa: E402
 from export.update_history import update_history  # noqa: E402
 from utils.progress_log import ProgressLog  # noqa: E402
+from utils.history import normalize_history_dataframe  # noqa: E402
 
 app = FastAPI(title="Pharma Classifier API")
 app.add_middleware(
@@ -106,6 +108,7 @@ def get_history() -> dict[str, object]:
     if not settings.HISTORY_PATH.exists():
         return {"records": []}
     df = pd.read_csv(settings.HISTORY_PATH, dtype=str).fillna("")
+    df = normalize_history_dataframe(df)
     return {"records": df.to_dict(orient="records")}
 
 
@@ -114,7 +117,12 @@ async def upload_history(file: UploadFile = File(...)) -> dict[str, str]:
     settings.HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
     contents = await file.read()
     try:
-        settings.HISTORY_PATH.write_bytes(contents)
+        df = pd.read_csv(BytesIO(contents), dtype=str).fillna("")
+    except Exception as exc:  # pragma: no cover - defensive for malformed CSV
+        raise HTTPException(status_code=400, detail=f"CSV invalide: {exc}")
+    normalized = normalize_history_dataframe(df)
+    try:
+        normalized.to_csv(settings.HISTORY_PATH, index=False)
     except OSError as exc:
         raise HTTPException(status_code=500, detail=f"Impossible d'enregistrer l'historique: {exc}")
     return {

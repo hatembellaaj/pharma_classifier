@@ -25,12 +25,14 @@ export default function ResultTable({ rows }) {
           <thead>
             {headerGroups.map((headerGroup) => {
               const headerGroupProps = headerGroup.getHeaderGroupProps();
+              const { key: headerGroupKey, ...headerGroupRest } = headerGroupProps;
               return (
-                <tr {...headerGroupProps} key={headerGroupProps.key || headerGroup.id}>
+                <tr {...headerGroupRest} key={headerGroupKey || headerGroup.id}>
                   {headerGroup.headers.map((column) => {
                     const headerProps = column.getHeaderProps(column.getSortByToggleProps());
+                    const { key: headerKey, ...headerRest } = headerProps;
                     return (
-                      <th key={headerProps.key || column.id} {...headerProps}>
+                      <th key={headerKey || column.id} {...headerRest}>
                         {column.render("Header")}
                         <span>
                           {column.isSorted ? (column.isSortedDesc ? " 🔽" : " 🔼") : ""}
@@ -46,12 +48,14 @@ export default function ResultTable({ rows }) {
             {tableRows.map((row) => {
               prepareRow(row);
               const rowProps = row.getRowProps();
+              const { key: rowKey, ...rowRest } = rowProps;
               return (
-                <tr {...rowProps} key={rowProps.key || row.id}>
+                <tr {...rowRest} key={rowKey || row.id}>
                   {row.cells.map((cell) => {
                     const cellProps = cell.getCellProps();
+                    const { key: cellKey, ...cellRest } = cellProps;
                     return (
-                      <td key={cellProps.key || cell.column.id} {...cellProps}>
+                      <td key={cellKey || cell.column.id} {...cellRest}>
                         {cell.render("Cell")}
                       </td>
                     );

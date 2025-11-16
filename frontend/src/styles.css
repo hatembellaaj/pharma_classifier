@@ -114,3 +114,21 @@ th {
   padding: 0.5rem 0;
   border-bottom: 1px dashed #e2e8f0;
 }
+
+.live-logs {
+  margin-top: 1rem;
+  background: #0f172a;
+  border-radius: 12px;
+  padding: 1rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.live-logs pre {
+  margin: 0;
+  color: #e2e8f0;
+  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}

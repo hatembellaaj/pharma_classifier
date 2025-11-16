@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from utils.history import normalize_history_dataframe
+
 HISTORY_PATH = Path("data/input/historiques/historique_global.csv")
 
 
@@ -17,7 +19,9 @@ def update_history(df: pd.DataFrame, path: Path | str | None = None) -> str:
         df.to_csv(history_path, index=False)
         return str(history_path)
     existing = pd.read_csv(history_path, dtype=str).fillna("")
+    existing = normalize_history_dataframe(existing)
     combined = pd.concat([existing, df], ignore_index=True)
+    combined = normalize_history_dataframe(combined)
 
     dedupe_keys = [col for col in ("CIP", "Libelle") if col in combined.columns]
     if dedupe_keys:

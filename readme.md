@@ -47,6 +47,21 @@ Pendant l'exécution :
    - Téléchargement du CSV (`/download`).
 6. **Historique** : le composant History Viewer lit `/history` pour visualiser les décisions cumulées.
 
+## Structure attendue des fichiers CSV (upload & historique)
+Les colonnes suivantes doivent être présentes dans les fichiers importés (upload utilisateur ou historique) afin que le backend puisse normaliser les données :
+
+| Colonne obligatoire | Description | Exemples d'alias acceptés |
+|---------------------|-------------|---------------------------|
+| `CIP` | Code produit (CIP 13) | `CIP13`, `Code_CIP`, `cip_13` |
+| `Libelle` | Libellé complet du produit | `Libellé`, `Libelle_produit`, `Désignation` |
+| `Marque` | Marque ou laboratoire |  |
+| `Univers` | Univers métier |  |
+| `Famille` | Famille associée |  |
+| `Tablette` | Catégorie tablette | `Tablettes` |
+| `Tablette_consolidee` | Catégorie tablette consolidée | `Tablette consolidée` |
+
+Les noms ci-dessus correspondent aux clés utilisées par le pipeline (`EXPECTED_COLUMNS`). Lors du chargement, le backend tente de renommer automatiquement les colonnes grâce aux alias les plus courants (par exemple `cip`, `libellé`, `tablette consolidée`, etc.). Si une colonne obligatoire manque, le backend lèvera une erreur « Colonnes manquantes ». Assurez-vous donc que chaque fichier comporte bien ces informations, même si certaines cellules sont vides.
+
 ## Utilisation avancée / développement local
 ### Backend FastAPI hors Docker
 ```bash

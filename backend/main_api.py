@@ -29,6 +29,17 @@ class RunRequest(BaseModel):
     file_path: str
 
 
+@app.get("/")
+def root() -> dict[str, str]:
+    """Basic landing endpoint used for uptime checks."""
+
+    return {
+        "message": "Pharma Classifier API is running",
+        "docs": "/docs",
+        "health": "/health",
+    }
+
+
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}

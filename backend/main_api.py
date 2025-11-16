@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import pandas as pd
@@ -20,6 +21,13 @@ from export.exporter import export_results  # noqa: E402
 from export.update_history import update_history  # noqa: E402
 
 app = FastAPI(title="Pharma Classifier API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 settings.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 LATEST_OUTPUT = settings.OUTPUT_DIR / "resultat_v2.csv"

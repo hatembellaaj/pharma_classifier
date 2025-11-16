@@ -100,6 +100,21 @@ def get_history() -> dict[str, object]:
     return {"records": df.to_dict(orient="records")}
 
 
+@app.post("/history/upload")
+async def upload_history(file: UploadFile = File(...)) -> dict[str, str]:
+    settings.HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    contents = await file.read()
+    try:
+        settings.HISTORY_PATH.write_bytes(contents)
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=f"Impossible d'enregistrer l'historique: {exc}")
+    return {
+        "message": "Historique importé avec succès",
+        "path": str(settings.HISTORY_PATH),
+        "filename": file.filename,
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
 

@@ -9,12 +9,11 @@ services:
       - "18000:8000"
     volumes:
       - ./data:/app/data
+
   ui:
     build: ./frontend
     container_name: pharma_classifier_ui
     ports:
       - "18100:5173"
-    environment:
-      - VITE_API_URL=http://localhost:18000
     depends_on:
       - api

@@ -8,16 +8,20 @@ from core.ai_classifier import classify_with_ai
 from core.category_assigner import apply_ai_classification, force_medicine_categories
 from core.historical_matcher import match_in_history
 from core.medicine_detector import is_medicine_by_label
+from config import settings
 
 
 def run_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     """Exécute les 4 étapes clés du pipeline."""
     print("\n🚀 Lancement du pipeline...")
     try:
-        historique = pd.read_csv(
-            "data/input/historiques/historique_global.csv", dtype=str
-        ).fillna("")
+        historique = pd.read_csv(settings.HISTORY_PATH, dtype=str).fillna("")
     except FileNotFoundError:
+        print(
+            "ℹ️ Aucun fichier d'historique trouvé à",
+            settings.HISTORY_PATH,
+            "→ utilisation d'un historique vide",
+        )
         historique = pd.DataFrame()
     processed_rows: list[pd.Series] = []
     for idx, row in df.iterrows():

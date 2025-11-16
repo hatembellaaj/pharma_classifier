@@ -80,6 +80,7 @@ Le script charge tous les CSV admissibles, applique les étapes de nettoyage/nor
 ## Endpoints principaux de l'API
 | Méthode | Route      | Description                                     |
 |---------|------------|-------------------------------------------------|
+| GET     | `/`        | Retourne un message de bienvenue + liens utiles.|
 | GET     | `/health`  | Vérifie que le service est opérationnel.        |
 | POST    | `/upload`  | Reçoit un fichier CSV (champ `file`).           |
 | POST    | `/run`     | Lance le pipeline sur le fichier uploadé.       |

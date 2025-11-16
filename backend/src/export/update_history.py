@@ -18,7 +18,14 @@ def update_history(df: pd.DataFrame, path: Path | str | None = None) -> str:
         return str(history_path)
     existing = pd.read_csv(history_path, dtype=str).fillna("")
     combined = pd.concat([existing, df], ignore_index=True)
-    combined.drop_duplicates(subset=["CIP", "Libelle"], keep="last", inplace=True)
+
+    dedupe_keys = [col for col in ("CIP", "Libelle") if col in combined.columns]
+    if dedupe_keys:
+        combined.drop_duplicates(subset=dedupe_keys, keep="last", inplace=True)
+    else:
+        print(
+            "⚠️ Colonnes de déduplication absentes (CIP/Libelle) → historisation sans filtre."
+        )
     combined.to_csv(history_path, index=False)
     print("📚 Historique mis à jour.")
     return str(history_path)

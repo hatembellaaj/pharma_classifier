@@ -13,7 +13,11 @@ const getDefaultApiUrl = () => {
   }
 
   const { protocol, hostname, port } = window.location;
-  const targetPort = PORT_MAPPING[port] || "18000";
+  const targetPort = PORT_MAPPING[port];
+
+  if (!targetPort) {
+    return FALLBACK_URL;
+  }
 
   return `${protocol}//${hostname}:${targetPort}`;
 };

@@ -32,6 +32,8 @@ Cela démarre :
 1. `api` (FastAPI) exposée sur [http://localhost:18000](http://localhost:18000).
 2. `ui` (Vite/React) exposée sur [http://localhost:18100](http://localhost:18100) et pointant sur l'API via `VITE_API_URL=http://localhost:18000`.
 
+Pour Docker Compose, placez vos variables (dont `OPENAI_API_KEY`) dans un fichier `.env` à la racine du dépôt : il est automatiquement chargé dans le conteneur `api`.
+
 Pendant l'exécution :
 - Les fichiers uploadés et résultats restent persistés dans le dossier hôte `data/` (merci au volume partagé).
 - Les ports peuvent être ajustés dans `docker-compose.yml` (pensez à synchroniser `VITE_API_URL`).

@@ -1,14 +1,84 @@
-"""FastAPI entry point for the pharma classifier backend."""
+"""FastAPI entry point exposing the Pharma Classifier pipeline."""
+from __future__ import annotations
 
-from fastapi import FastAPI
+import sys
+from pathlib import Path
+
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+import pandas as pd
+
+BASE_DIR = Path(__file__).resolve().parent
+SRC_DIR = BASE_DIR / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.append(str(SRC_DIR))
+
+from config import settings  # noqa: E402
+from core.pipeline import run_pipeline  # noqa: E402
+from export.exporter import export_results  # noqa: E402
+from export.update_history import update_history  # noqa: E402
 
 app = FastAPI(title="Pharma Classifier API")
+settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+settings.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+LATEST_OUTPUT = settings.OUTPUT_DIR / "resultat_v2.csv"
+
+
+class RunRequest(BaseModel):
+    file_path: str
 
 
 @app.get("/health")
-async def health_check() -> dict[str, str]:
-    """Basic liveness probe endpoint."""
+def health_check() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.post("/upload")
+async def upload_csv(file: UploadFile = File(...)) -> dict[str, str]:
+    file_path = settings.UPLOAD_DIR / file.filename
+    contents = await file.read()
+    file_path.write_bytes(contents)
+    return {"message": "Fichier reçu", "path": str(file_path)}
+
+
+@app.post("/run")
+def run_pipeline_endpoint(payload: RunRequest) -> dict[str, object]:
+    file_path = Path(payload.file_path)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Fichier introuvable")
+    df = pd.read_csv(file_path, dtype=str).fillna("")
+    df_v2 = run_pipeline(df)
+    export_results(df_v2, LATEST_OUTPUT)
+    update_history(df_v2, settings.HISTORY_PATH)
+    return {
+        "message": "Pipeline terminé",
+        "output": str(LATEST_OUTPUT),
+        "rows": len(df_v2),
+    }
+
+
+@app.get("/results")
+def get_results() -> dict[str, object]:
+    if not LATEST_OUTPUT.exists():
+        raise HTTPException(status_code=404, detail="Aucun fichier généré")
+    df = pd.read_csv(LATEST_OUTPUT, dtype=str).fillna("")
+    return {"records": df.to_dict(orient="records")}
+
+
+@app.get("/download")
+def download_result() -> FileResponse:
+    if not LATEST_OUTPUT.exists():
+        raise HTTPException(status_code=404, detail="Aucun fichier généré")
+    return FileResponse(path=LATEST_OUTPUT, filename=LATEST_OUTPUT.name)
+
+
+@app.get("/history")
+def get_history() -> dict[str, object]:
+    if not settings.HISTORY_PATH.exists():
+        return {"records": []}
+    df = pd.read_csv(settings.HISTORY_PATH, dtype=str).fillna("")
+    return {"records": df.to_dict(orient="records")}
 
 
 if __name__ == "__main__":

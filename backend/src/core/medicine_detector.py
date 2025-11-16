@@ -1,18 +1,17 @@
-"""Rule-based medicine detection using regexes."""
+"""Regex-based medicine detection."""
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
 
-MEDICINE_REGEX = re.compile(r"\b(?:mg|gélule|comprimé|sirop)\b", flags=re.IGNORECASE)
+from config.constants import MEDICINE_HINTS
 
-
-@dataclass
-class DetectionResult:
-    has_medicine: bool
-    matches: list[str]
+MEDICINE_REGEX = re.compile(
+    r"\b(" + r"|".join(MEDICINE_HINTS) + r")\b", re.IGNORECASE
+)
 
 
-def detect(text: str) -> DetectionResult:
-    matches = MEDICINE_REGEX.findall(text)
-    return DetectionResult(has_medicine=bool(matches), matches=matches)
+def is_medicine_by_label(label: str) -> bool:
+    """Detect if a product label looks like a medicine."""
+    if not isinstance(label, str):
+        return False
+    return bool(MEDICINE_REGEX.search(label))

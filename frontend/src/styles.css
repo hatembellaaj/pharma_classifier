@@ -1,19 +1,116 @@
+:root {
+  font-family: "Inter", system-ui, sans-serif;
+  color: #0f172a;
+  background-color: #f5f7fb;
+}
+
 body {
-  font-family: system-ui, sans-serif;
   margin: 0;
   background: #f5f7fb;
 }
 
 .app {
-  max-width: 960px;
+  max-width: 1040px;
   margin: 0 auto;
   padding: 2rem;
 }
 
+header {
+  margin-bottom: 2rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.subtitle {
+  color: #475569;
+}
+
 .card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.75rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.card input[type="file"] {
+  margin-top: 0.75rem;
+}
+
+.card button {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2563eb, #06b6d4);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.card button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status {
+  margin-top: 0.5rem;
+  color: #0f172a;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.stats span {
+  display: block;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.stats strong {
+  font-size: 1.25rem;
+  color: #0f172a;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+  background: #f8fafc;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.history-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed #e2e8f0;
 }

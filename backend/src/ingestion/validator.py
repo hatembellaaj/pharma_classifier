@@ -1,23 +1,14 @@
-"""Input dataframe validation helpers."""
+"""Input dataframe schema validation."""
 from __future__ import annotations
-
-from dataclasses import dataclass
 
 import pandas as pd
 
-
-@dataclass
-class ValidationIssue:
-    column: str
-    message: str
+from config.constants import EXPECTED_COLUMNS
 
 
-class DataFrameValidator:
-    required_columns = ("id", "texte")
-
-    def validate(self, df: pd.DataFrame) -> list[ValidationIssue]:
-        issues: list[ValidationIssue] = []
-        for column in self.required_columns:
-            if column not in df.columns:
-                issues.append(ValidationIssue(column=column, message="missing"))
-        return issues
+def validate_schema(df: pd.DataFrame) -> pd.DataFrame:
+    """Ensure the dataframe contains the expected officine columns."""
+    missing = [column for column in EXPECTED_COLUMNS if column not in df.columns]
+    if missing:
+        raise ValueError(f"⛔ Colonnes manquantes : {missing}")
+    return df

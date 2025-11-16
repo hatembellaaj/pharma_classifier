@@ -1,10 +1,11 @@
-"""Project-level normalization helper."""
+"""Text normalization helpers."""
 from __future__ import annotations
 
 import unicodedata
 
 
-def normalize(text: str) -> str:
+def normalize_text(text: str) -> str:
+    """Normalize unicode accents, trim spaces and uppercase the payload."""
     if not isinstance(text, str):
         return ""
     normalized = unicodedata.normalize("NFKD", text)

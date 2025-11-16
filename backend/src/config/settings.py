@@ -4,9 +4,9 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 
-load_dotenv()
+load_dotenv(find_dotenv(), override=False)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 API_MEDICAMENTS_BASE = os.getenv(

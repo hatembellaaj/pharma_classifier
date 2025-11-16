@@ -3,6 +3,7 @@ import UploadCSV from "./components/UploadCSV";
 import PipelineRunner from "./components/PipelineRunner";
 import ResultTable from "./components/ResultTable";
 import HistoryViewer from "./components/HistoryViewer";
+import HistoryUploader from "./components/HistoryUploader";
 import axios from "axios";
 import Papa from "papaparse";
 import "./styles.css";
@@ -12,6 +13,7 @@ function App() {
   const [filePath, setFilePath] = useState(null);
   const [resultMeta, setResultMeta] = useState(null);
   const [rows, setRows] = useState([]);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   const refreshResults = async () => {
     try {
@@ -32,6 +34,8 @@ function App() {
       }
     }
   };
+
+  const refreshHistory = () => setHistoryRefreshKey((prev) => prev + 1);
 
   return (
     <div className="app">
@@ -57,6 +61,7 @@ function App() {
         onResult={(meta) => {
           setResultMeta(meta);
           refreshResults();
+          refreshHistory();
         }}
       />
 
@@ -75,7 +80,9 @@ function App() {
 
       {rows.length > 0 && <ResultTable rows={rows} />}
 
-      <HistoryViewer refreshKey={resultMeta?.rows || 0} />
+      <HistoryUploader onUploaded={refreshHistory} />
+
+      <HistoryViewer refreshKey={historyRefreshKey} />
     </div>
   );
 }

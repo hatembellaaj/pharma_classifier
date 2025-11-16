@@ -15,6 +15,7 @@ API_MEDICAMENTS_BASE = os.getenv(
 DATA_DIR = Path(os.getenv("DATA_DIR", "data"))
 UPLOAD_DIR = DATA_DIR / "uploaded"
 OUTPUT_DIR = DATA_DIR / "output" / "v2"
+LOG_PATH = DATA_DIR / "logs" / "pipeline.log"
 HISTORY_PATH = DATA_DIR / "input" / "historiques" / "historique_global.csv"
 CACHE_DIR = DATA_DIR / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)

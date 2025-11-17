@@ -13,6 +13,7 @@ from core.medicine_detector import is_medicine_by_label
 from config import settings
 from utils.progress_log import ProgressLog
 from utils.history import normalize_history_dataframe
+from utils.dataframe import coalesce_duplicate_columns
 
 
 def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None) -> pd.DataFrame:
@@ -26,6 +27,7 @@ def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None
     emit("\n🚀 Lancement du pipeline...")
     try:
         historique = pd.read_csv(settings.HISTORY_PATH, dtype=str).fillna("")
+        historique = coalesce_duplicate_columns(historique)
         historique = normalize_history_dataframe(historique)
     except FileNotFoundError:
         emit(
@@ -57,4 +59,5 @@ def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None
     emit("\n✅ Pipeline terminé")
     if not processed_rows:
         return pd.DataFrame(columns=df.columns)
-    return pd.DataFrame(processed_rows).fillna("")
+    result = pd.DataFrame(processed_rows).fillna("")
+    return coalesce_duplicate_columns(result)

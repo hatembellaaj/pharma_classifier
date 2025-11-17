@@ -6,6 +6,7 @@ import unicodedata
 import pandas as pd
 
 from config.constants import EXPECTED_COLUMNS
+from utils.dataframe import coalesce_duplicate_columns
 
 
 def _slugify(name: str) -> str:
@@ -53,6 +54,8 @@ def normalize_history_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
     if df is None or df.empty:
         return pd.DataFrame(columns=EXPECTED_COLUMNS)
+
+    df = coalesce_duplicate_columns(df)
 
     rename_map: dict[str, str] = {}
     for column in df.columns:

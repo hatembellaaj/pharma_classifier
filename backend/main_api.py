@@ -22,6 +22,7 @@ from export.exporter import export_results  # noqa: E402
 from export.update_history import update_history  # noqa: E402
 from utils.progress_log import ProgressLog  # noqa: E402
 from utils.history import normalize_history_dataframe  # noqa: E402
+from utils.dataframe import coalesce_duplicate_columns  # noqa: E402
 
 app = FastAPI(title="Pharma Classifier API")
 app.add_middleware(
@@ -71,6 +72,7 @@ def run_pipeline_endpoint(payload: RunRequest) -> dict[str, object]:
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Fichier introuvable")
     df = pd.read_csv(file_path, dtype=str).fillna("")
+    df = coalesce_duplicate_columns(df)
     progress_log.reset()
     df_v2 = run_pipeline(df, progress_logger=progress_log)
     export_results(df_v2, LATEST_OUTPUT)
@@ -93,6 +95,7 @@ def get_results() -> dict[str, object]:
     if not LATEST_OUTPUT.exists():
         raise HTTPException(status_code=404, detail="Aucun fichier généré")
     df = pd.read_csv(LATEST_OUTPUT, dtype=str).fillna("")
+    df = coalesce_duplicate_columns(df)
     return {"records": df.to_dict(orient="records")}
 
 

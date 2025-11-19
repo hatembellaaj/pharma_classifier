@@ -5,7 +5,12 @@ import pandas as pd
 
 from typing import Optional
 
-from core.api_medicaments import is_medicine_by_api
+from core.api_medicaments import (
+    extract_tva_from_payload,
+    is_medicine_payload,
+    search_by_cip,
+    summarize_payload,
+)
 from core.ai_classifier import classify_with_ai
 from core.category_assigner import apply_ai_classification, force_medicine_categories
 from core.historical_matcher import match_in_history
@@ -49,12 +54,21 @@ def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None
             emit("➡️ Détection médicament via libellé")
             processed_rows.append(force_medicine_categories(row))
             continue
-        if cip and is_medicine_by_api(cip):
-            emit("➡️ Détection médicament via API BDPM REST")
-            processed_rows.append(force_medicine_categories(row))
-            continue
+        api_payload = search_by_cip(cip) if cip else None
+        if api_payload:
+            emit(f"   ↪ Réponse API officielle : {summarize_payload(api_payload)}")
+            if is_medicine_payload(api_payload):
+                emit("➡️ Détection médicament via API BDPM REST")
+                medicine_row = force_medicine_categories(row)
+                tva_value = extract_tva_from_payload(api_payload, cip)
+                if tva_value:
+                    medicine_row["TVA"] = tva_value
+                    emit(f"   ↪ TVA calculée via l'API : {tva_value}")
+                processed_rows.append(medicine_row)
+                continue
         emit("➡️ Produit parapharmaceutique → IA")
-        ai_json = classify_with_ai(label)
+        labo = row.get("LABO", "")
+        ai_json = classify_with_ai(label, labo=labo)
         processed_rows.append(apply_ai_classification(row, ai_json))
     emit("\n✅ Pipeline terminé")
     if not processed_rows:

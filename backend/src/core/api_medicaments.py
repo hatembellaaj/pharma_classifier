@@ -2,8 +2,7 @@
 from __future__ import annotations
 
 import json
-import os
-from typing import Any
+from typing import Any, Iterable
 
 import requests
 
@@ -45,10 +44,111 @@ def search_by_cip(cip: str) -> Any:
     return None
 
 
-def is_medicine_by_api(cip: str) -> bool:
-    data = search_by_cip(cip)
-    if not data:
+def is_medicine_payload(payload: Any) -> bool:
+    """Heuristically check whether *payload* describes a medicine."""
+
+    if not payload:
         return False
-    text = json.dumps(data).lower()
+    try:
+        text = json.dumps(payload).lower()
+    except (TypeError, ValueError):
+        return False
     keywords = ["denomination", "formepharmaceutique", "substance", "amm"]
     return any(keyword in text for keyword in keywords)
+
+
+def _normalize_digits(value: Any) -> str:
+    return "".join(char for char in str(value) if char.isdigit())
+
+
+def _first_value(data: dict[str, Any], keys: Iterable[str]) -> Any:
+    for key in keys:
+        if key in data and data[key] not in (None, ""):
+            return data[key]
+    return None
+
+
+def _as_float(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    try:
+        return float(str(value).replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+
+
+def _iter_presentations(payload: Any) -> Iterable[dict[str, Any]]:
+    if isinstance(payload, dict):
+        presentations = payload.get("presentations")
+        if isinstance(presentations, list):
+            for presentation in presentations:
+                if isinstance(presentation, dict):
+                    yield presentation
+        results = payload.get("results")
+        if isinstance(results, list):
+            for entry in results:
+                yield from _iter_presentations(entry)
+    elif isinstance(payload, list):
+        for item in payload:
+            yield from _iter_presentations(item)
+
+
+def _format_rate(rate: float) -> str:
+    if rate.is_integer():
+        return f"{int(rate)}%"
+    return f"{rate:.1f}%"
+
+
+def extract_tva_from_payload(payload: Any, target_cip: str | None = None) -> str | None:
+    """Return the TVA rate inferred from the API *payload* if present."""
+
+    if not payload:
+        return None
+    normalized_cip = _normalize_digits(target_cip) if target_cip else ""
+    code_keys = ("codeCIP13", "codeCIP7", "cip13", "cip")
+    for presentation in _iter_presentations(payload):
+        if normalized_cip:
+            codes = {_normalize_digits(presentation.get(key, "")) for key in code_keys}
+            if normalized_cip and normalized_cip not in codes:
+                continue
+        rate_value = _first_value(
+            presentation,
+            ("taux_tva", "tauxTVA", "tva", "tauxTva", "tauxTVA_presentation"),
+        )
+        rate = _as_float(rate_value)
+        if rate is None:
+            price_ttc = _as_float(
+                _first_value(
+                    presentation,
+                    ("prix_ttc", "prixTTC", "prix", "prixPublic", "prix_public"),
+                )
+            )
+            price_ht = _as_float(
+                _first_value(
+                    presentation,
+                    ("prix_ht", "prixHT", "prixHorsTaxe", "prix_hors_taxe"),
+                )
+            )
+            if price_ttc and price_ht and price_ht > 0:
+                rate = round(((price_ttc / price_ht) - 1) * 100, 1)
+        if rate is not None:
+            return _format_rate(rate)
+    return None
+
+
+def summarize_payload(payload: Any, limit: int = 600) -> str:
+    """Return a human-readable summary of the API response for logging."""
+
+    try:
+        serialized = json.dumps(payload, ensure_ascii=False)
+    except (TypeError, ValueError):
+        serialized = str(payload)
+    if len(serialized) <= limit:
+        return serialized
+    return serialized[: limit - 1] + "…"
+
+
+def is_medicine_by_api(cip: str) -> bool:
+    """Backward-compatible helper preserved for legacy callers."""
+
+    return is_medicine_payload(search_by_cip(cip))

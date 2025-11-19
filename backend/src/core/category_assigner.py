@@ -13,6 +13,9 @@ def force_medicine_categories(row: pd.Series) -> pd.Series:
     new_row = row.copy()
     for column, value in FORCED_MEDICINE_CATEGORIES.items():
         new_row[column] = value
+    labo = row.get("LABO", "") if isinstance(row, pd.Series) else ""
+    if (not str(new_row.get("Marque", "")).strip()) and labo:
+        new_row["Marque"] = labo
     new_row["Classification_source"] = "MEDICAMENT"
     return new_row
 
@@ -34,5 +37,8 @@ def apply_ai_classification(row: pd.Series, payload: Any) -> pd.Series:
     for field in ["Marque", "Univers", "Famille", "Tablette", "Tablette_consolidee"]:
         if field in data and data[field]:
             new_row[field] = data[field]
+    labo = row.get("LABO", "") if isinstance(row, pd.Series) else ""
+    if (not str(new_row.get("Marque", "")).strip()) and labo:
+        new_row["Marque"] = labo
     new_row["Classification_source"] = "IA"
     return new_row

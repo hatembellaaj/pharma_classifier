@@ -9,15 +9,19 @@ from config.settings import OPENAI_API_KEY
 OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions"
 
 
-def classify_with_ai(label: str) -> str:
+def classify_with_ai(label: str, labo: str | None = None) -> str:
     if not OPENAI_API_KEY:
         raise RuntimeError("OPENAI_API_KEY est requis pour la classification IA")
+
+    user_content = f"Libellé : {label}"
+    if labo:
+        user_content += f"\nLaboratoire : {labo}"
 
     payload = {
         "model": "gpt-4o-mini",
         "messages": [
             {"role": "system", "content": PROMPT_CLASSIFICATION},
-            {"role": "user", "content": f"Libellé : {label}"},
+            {"role": "user", "content": user_content},
         ],
     }
 

@@ -7,6 +7,7 @@ from typing import Any, Iterable
 import requests
 
 from config import settings
+from utils.logger import log
 
 BASE_URL = settings.API_MEDICAMENTS_BASE
 CACHE_FILE = settings.CACHE_DIR / "medicaments_cache.json"
@@ -28,18 +29,33 @@ def search_by_cip(cip: str) -> Any:
     """Query the API for a given CIP using a local cache."""
     normalized_cip = str(cip).strip()
     if not normalized_cip:
+        log("🔁 API BDPM ignorée : CIP vide")
         return None
     if normalized_cip in CACHE:
+        log(f"🔁 API BDPM : utilisation du cache pour le CIP {normalized_cip}")
         return CACHE[normalized_cip]
     url = f"{BASE_URL}/search"
     try:
+        log(f"🌐 API BDPM : requête en cours pour le CIP {normalized_cip}")
         response = requests.get(url, params={"query": normalized_cip}, timeout=5)
+        log(
+            f"🌐 API BDPM : réponse HTTP {response.status_code} pour le CIP {normalized_cip}"
+        )
         if response.status_code == 200:
             data = response.json()
+            log(
+                f"🌐 API BDPM : payload CIP {normalized_cip} → "
+                f"{summarize_payload(data)}"
+            )
             CACHE[normalized_cip] = data
             save_cache()
             return data
-    except requests.RequestException:
+        log(
+            f"🌐 API BDPM : aucune donnée exploitable (HTTP {response.status_code}) "
+            f"pour le CIP {normalized_cip}"
+        )
+    except requests.RequestException as exc:
+        log(f"⚠️ API BDPM : erreur réseau pour le CIP {normalized_cip} → {exc}")
         return None
     return None
 

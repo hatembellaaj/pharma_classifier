@@ -54,7 +54,7 @@ def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None
             emit("➡️ Détection médicament via libellé")
             processed_rows.append(force_medicine_categories(row))
             continue
-        api_payload = search_by_cip(cip) if cip else None
+        api_payload = search_by_cip(cip, label=label) if cip or label else None
         if api_payload is not None:
             emit(f"   ↪ Réponse API officielle : {summarize_payload(api_payload)}")
             if is_medicine_payload(api_payload):

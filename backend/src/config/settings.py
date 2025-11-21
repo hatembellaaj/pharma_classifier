@@ -17,7 +17,7 @@ load_dotenv(env_path, override=False)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 API_MEDICAMENTS_BASE = os.getenv(
-    "API_MEDICAMENTS_BASE", "https://fr.gouv.medicaments.rest/api/medicaments"
+    "API_MEDICAMENTS_BASE", "https://medicaments-api.giygas.dev"
 )
 DATA_DIR = Path(os.getenv("DATA_DIR", "data"))
 UPLOAD_DIR = DATA_DIR / "uploaded"

@@ -3,13 +3,15 @@ from __future__ import annotations
 
 import requests
 
-from config.prompts import PROMPT_CLASSIFICATION
+from config.prompts import build_classification_prompt
 from config.settings import OPENAI_API_KEY
 
 OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions"
 
 
-def classify_with_ai(label: str, labo: str | None = None) -> str:
+def classify_with_ai(
+    label: str, labo: str | None = None, cluster_catalog: dict[str, list[str]] | None = None
+) -> str:
     if not OPENAI_API_KEY:
         raise RuntimeError("OPENAI_API_KEY est requis pour la classification IA")
 
@@ -17,10 +19,12 @@ def classify_with_ai(label: str, labo: str | None = None) -> str:
     if labo:
         user_content += f"\nLaboratoire : {labo}"
 
+    system_prompt = build_classification_prompt(cluster_catalog)
+
     payload = {
         "model": "gpt-4o-mini",
         "messages": [
-            {"role": "system", "content": PROMPT_CLASSIFICATION},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content},
         ],
     }

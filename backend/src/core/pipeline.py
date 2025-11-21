@@ -17,7 +17,7 @@ from core.historical_matcher import match_in_history
 from core.medicine_detector import is_medicine_by_label
 from config import settings
 from utils.progress_log import ProgressLog
-from utils.history import normalize_history_dataframe
+from utils.history import extract_history_clusters, normalize_history_dataframe
 from utils.dataframe import coalesce_duplicate_columns
 
 
@@ -40,6 +40,14 @@ def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None
             f"{settings.HISTORY_PATH} → utilisation d'un historique vide"
         )
         historique = pd.DataFrame()
+
+    cluster_catalog = extract_history_clusters(historique)
+    emit("\n📚 Clusters extraits depuis l'historique :")
+    for column, values in cluster_catalog.items():
+        if values:
+            emit(f"   • {column} ({len(values)}) : {', '.join(values)}")
+        else:
+            emit(f"   • {column} : aucun cluster trouvé")
     processed_rows: list[pd.Series] = []
     for idx, row in df.iterrows():
         label = row.get("Libelle", "")
@@ -70,7 +78,7 @@ def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None
             emit("   ↪ API BDPM REST interrogée : aucune réponse exploitable")
         emit("➡️ Produit parapharmaceutique → IA")
         labo = row.get("LABO", "")
-        ai_json = classify_with_ai(label, labo=labo)
+        ai_json = classify_with_ai(label, labo=labo, cluster_catalog=cluster_catalog)
         processed_rows.append(apply_ai_classification(row, ai_json))
     emit("\n✅ Pipeline terminé")
     if not processed_rows:

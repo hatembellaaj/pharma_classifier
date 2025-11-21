@@ -1,6 +1,23 @@
 """Prompt templates for the AI classifier."""
 
-PROMPT_CLASSIFICATION = """
+from __future__ import annotations
+
+from typing import Mapping
+
+
+def _format_cluster_catalog(cluster_catalog: Mapping[str, list[str]]) -> str:
+    if not cluster_catalog:
+        return "Aucun cluster disponible dans l'historique."
+
+    lines: list[str] = []
+    for column, values in cluster_catalog.items():
+        display = ", ".join(values) if values else "aucun cluster disponible"
+        lines.append(f"- {column} : {display}")
+
+    return "\n".join(lines)
+
+
+PROMPT_CLASSIFICATION_TEMPLATE = """
 Tu es un expert en classification de produits de parapharmacie et de médicaments.
 Tu disposes d’un référentiel fermé : tu ne dois JAMAIS inventer de nouvelle catégorie.
 Tu dois suivre les règles ci-dessous à la lettre.
@@ -19,6 +36,9 @@ Récupère son indication, sa classe thérapeutique et son usage patient.
 2️⃣ Tu n’inventes JAMAIS de nouvelles catégories
 
 Tu dois utiliser EXCLUSIVEMENT les Univers / Familles / Tablettes déjà existants dans mon référentiel.
+Voici les clusters actuels issus de l'historique (choisis le plus proche et ne crée un nouveau cluster qu'en cas d'absence totale de correspondance) :
+{cluster_catalog}
+
 Si aucune correspondance parfaite n’existe → choisis la plus proche par besoin patient.
 
 3️⃣ Tu ne laisses PLUS JAMAIS de champs null
@@ -35,13 +55,13 @@ Puis sélectionne la Famille et la Tablette la plus proche de ce besoin.
 
 Tu renvoies UNIQUEMENT du JSON au format exact suivant :
 
-{
+{{
   "Marque": "...",
   "Univers": "...",
   "Famille": "...",
   "Tablette": "...",
   "Tablette_consolidee": "..."
-}
+}}
 
 6️⃣ Jamais de justification dans la réponse finale
 
@@ -55,3 +75,11 @@ Libellé : AURICULARUM poudre + solution auriculaire 10 ml
 Laboratoire : Grimberg
 Classifie-le. »
 """
+
+
+def build_classification_prompt(cluster_catalog: Mapping[str, list[str]] | None = None) -> str:
+    """Return the classification prompt enriched with the provided clusters."""
+
+    return PROMPT_CLASSIFICATION_TEMPLATE.format(
+        cluster_catalog=_format_cluster_catalog(cluster_catalog or {})
+    )

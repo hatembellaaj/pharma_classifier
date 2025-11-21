@@ -55,13 +55,13 @@ Puis sélectionne la Famille et la Tablette la plus proche de ce besoin.
 
 Tu renvoies UNIQUEMENT du JSON au format exact suivant :
 
-{
+{{
   "Marque": "...",
   "Univers": "...",
   "Famille": "...",
   "Tablette": "...",
   "Tablette_consolidee": "..."
-}
+}}
 
 6️⃣ Jamais de justification dans la réponse finale
 

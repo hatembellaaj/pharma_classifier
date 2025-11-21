@@ -76,4 +76,31 @@ def normalize_history_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return normalized[ordered_columns].fillna("")
 
 
-__all__ = ["normalize_history_dataframe"]
+def extract_history_clusters(
+    df: pd.DataFrame, columns: tuple[str, ...] = ("Univers", "Famille", "Tablette", "Tablette_consolidee")
+) -> dict[str, list[str]]:
+    """Return the unique non-empty clusters for each requested *columns*.
+
+    The function gracefully handles missing data by returning an empty list for
+    any column absent from the dataframe or when the dataframe itself is empty.
+    """
+
+    if df is None or df.empty:
+        return {column: [] for column in columns}
+
+    clusters: dict[str, list[str]] = {}
+    for column in columns:
+        if column not in df.columns:
+            clusters[column] = []
+            continue
+        values = {
+            str(value).strip()
+            for value in df[column].astype(str).fillna("")
+            if str(value).strip()
+        }
+        clusters[column] = sorted(values)
+
+    return clusters
+
+
+__all__ = ["normalize_history_dataframe", "extract_history_clusters"]

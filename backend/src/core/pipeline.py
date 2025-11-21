@@ -54,8 +54,8 @@ def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None
             emit("➡️ Détection médicament via libellé")
             processed_rows.append(force_medicine_categories(row))
             continue
-        api_payload = search_by_cip(cip) if cip else None
-        if api_payload:
+        api_payload = search_by_cip(cip, label=label) if cip or label else None
+        if api_payload is not None:
             emit(f"   ↪ Réponse API officielle : {summarize_payload(api_payload)}")
             if is_medicine_payload(api_payload):
                 emit("➡️ Détection médicament via API BDPM REST")
@@ -66,6 +66,8 @@ def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None
                     emit(f"   ↪ TVA calculée via l'API : {tva_value}")
                 processed_rows.append(medicine_row)
                 continue
+        elif cip:
+            emit("   ↪ API BDPM REST interrogée : aucune réponse exploitable")
         emit("➡️ Produit parapharmaceutique → IA")
         labo = row.get("LABO", "")
         ai_json = classify_with_ai(label, labo=labo)

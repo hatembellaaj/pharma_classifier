@@ -24,5 +24,6 @@ UPLOAD_DIR = DATA_DIR / "uploaded"
 OUTPUT_DIR = DATA_DIR / "output" / "v2"
 LOG_PATH = DATA_DIR / "logs" / "pipeline.log"
 HISTORY_PATH = DATA_DIR / "input" / "historiques" / "historique_global.csv"
+REFERENCE_CATALOG_PATH = DATA_DIR / "input" / "referentiels" / "referentiel_categories.csv"
 CACHE_DIR = DATA_DIR / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)

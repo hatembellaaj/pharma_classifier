@@ -10,7 +10,10 @@ OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions"
 
 
 def classify_with_ai(
-    label: str, labo: str | None = None, cluster_catalog: dict[str, list[str]] | None = None
+    label: str,
+    labo: str | None = None,
+    cluster_catalog: dict[str, list[str]] | None = None,
+    reference_catalog: dict[str, list[str]] | None = None,
 ) -> str:
     if not OPENAI_API_KEY:
         raise RuntimeError("OPENAI_API_KEY est requis pour la classification IA")
@@ -19,7 +22,9 @@ def classify_with_ai(
     if labo:
         user_content += f"\nLaboratoire : {labo}"
 
-    system_prompt = build_classification_prompt(cluster_catalog)
+    system_prompt = build_classification_prompt(
+        cluster_catalog=cluster_catalog, reference_catalog=reference_catalog
+    )
 
     payload = {
         "model": "gpt-4o-mini",

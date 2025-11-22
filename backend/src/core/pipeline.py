@@ -41,6 +41,22 @@ def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None
         )
         historique = pd.DataFrame()
 
+    try:
+        reference_df = pd.read_csv(settings.REFERENCE_CATALOG_PATH, dtype=str).fillna("")
+        reference_df = coalesce_duplicate_columns(reference_df)
+        reference_df = normalize_history_dataframe(reference_df)
+        reference_catalog = extract_history_clusters(reference_df)
+        emit(
+            "\n📚 Référentiel chargé depuis "
+            f"{settings.REFERENCE_CATALOG_PATH} ({len(reference_df)} lignes)"
+        )
+    except FileNotFoundError:
+        emit(
+            "ℹ️ Aucun référentiel trouvé à "
+            f"{settings.REFERENCE_CATALOG_PATH} → utilisation de l'historique"
+        )
+        reference_catalog = extract_history_clusters(historique)
+
     cluster_catalog = extract_history_clusters(historique)
     emit("\n📚 Clusters extraits depuis l'historique :")
     for column, values in cluster_catalog.items():
@@ -78,7 +94,12 @@ def run_pipeline(df: pd.DataFrame, progress_logger: Optional[ProgressLog] = None
             emit("   ↪ API BDPM REST interrogée : aucune réponse exploitable")
         emit("➡️ Produit parapharmaceutique → IA")
         labo = row.get("LABO", "")
-        ai_json = classify_with_ai(label, labo=labo, cluster_catalog=cluster_catalog)
+        ai_json = classify_with_ai(
+            label,
+            labo=labo,
+            cluster_catalog=cluster_catalog,
+            reference_catalog=reference_catalog,
+        )
         processed_rows.append(apply_ai_classification(row, ai_json))
     emit("\n✅ Pipeline terminé")
     if not processed_rows:

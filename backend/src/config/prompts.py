@@ -17,12 +17,27 @@ def _format_cluster_catalog(cluster_catalog: Mapping[str, list[str]]) -> str:
     return "\n".join(lines)
 
 
+def _format_reference_catalog(reference_catalog: Mapping[str, list[str]]) -> str:
+    if not reference_catalog:
+        return "Aucun référentiel fourni (utilise le meilleur rapprochement possible)."
+
+    lines: list[str] = []
+    for column, values in reference_catalog.items():
+        display = ", ".join(values) if values else "aucune valeur disponible"
+        lines.append(f"- {column} : {display}")
+
+    return "\n".join(lines)
+
+
 PROMPT_CLASSIFICATION_TEMPLATE = """
 Tu es un expert en classification de produits parapharmacie, dispositifs médicaux et médicaments.
 Tu disposes d’un référentiel entièrement FERMÉ : tu ne dois JAMAIS inventer une nouvelle catégorie.
 
 Historique des clusters disponibles (à respecter en priorité) :
 {cluster_catalog}
+
+Référentiels dynamiques (toujours à respecter) :
+{reference_catalog}
 
 Ton objectif est de classer chaque produit dans les champs suivants :
 
@@ -152,9 +167,13 @@ Classifie-le. »
 """
 
 
-def build_classification_prompt(cluster_catalog: Mapping[str, list[str]] | None = None) -> str:
-    """Return the classification prompt enriched with the provided clusters."""
+def build_classification_prompt(
+    cluster_catalog: Mapping[str, list[str]] | None = None,
+    reference_catalog: Mapping[str, list[str]] | None = None,
+) -> str:
+    """Return the classification prompt enriched with the provided catalogs."""
 
     return PROMPT_CLASSIFICATION_TEMPLATE.format(
-        cluster_catalog=_format_cluster_catalog(cluster_catalog or {})
+        cluster_catalog=_format_cluster_catalog(cluster_catalog or {}),
+        reference_catalog=_format_reference_catalog(reference_catalog or {}),
     )

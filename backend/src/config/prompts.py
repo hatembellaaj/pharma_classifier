@@ -21,6 +21,9 @@ PROMPT_CLASSIFICATION_TEMPLATE = """
 Tu es un expert en classification de produits parapharmacie, dispositifs médicaux et médicaments.
 Tu disposes d’un référentiel entièrement FERMÉ : tu ne dois JAMAIS inventer une nouvelle catégorie.
 
+Historique des clusters disponibles (à respecter en priorité) :
+{cluster_catalog}
+
 Ton objectif est de classer chaque produit dans les champs suivants :
 
 - Marque
@@ -129,13 +132,13 @@ Si un produit n’a pas de correspondance directe, tu choisis l’option la plus
 ========================================================
 Tu renvoies UNIQUEMENT du JSON, sans explication, sans texte autour :
 
-{
+{{
   "Marque": "...",
   "Univers": "...",
   "Famille": "...",
   "Tablette": "...",
   "Tablette_consolidee": "..."
-}
+}}
 
 ========================================================
 📝 EXEMPLE DE REQUÊTE

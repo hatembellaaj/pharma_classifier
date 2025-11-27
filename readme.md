@@ -18,10 +18,16 @@ Solution complète permettant de classifier automatiquement un catalogue de prod
 - Option développement local :
   - Python 3.11 + `pip` pour le backend.
   - Node.js 18+ et `npm`/`yarn` pour le frontend.
-- Variables d'environnement (à placer dans `backend/.env` ou dans l'environnement du conteneur) :
-  - `OPENAI_API_KEY` : clé utilisée par la classification IA.
+- Variables d'environnement (à placer dans un fichier `.env` à la racine ou directement dans l'environnement) :
+  - `OPENAI_API_KEY` : clé utilisée par la classification IA (**obligatoire** pour l'étape IA).
   - `API_MEDICAMENTS_BASE` *(optionnel)* : URL de l'API BDPM REST (valeur par défaut `https://fr.gouv.medicaments.rest/api/medicaments`).
   - `DATA_DIR` *(optionnel)* : chemin racine des données (par défaut `data`).
+
+Un exemple de configuration est disponible dans `.env.example`. Copiez-le puis renseignez vos valeurs :
+
+```bash
+cp .env.example .env
+```
 
 ## Lancer la solution avec Docker Compose
 ```bash
